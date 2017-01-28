@@ -1,23 +1,86 @@
 #include <SoftwareSerial.h>
-SoftwareSerial BTSerial(5, 6); //RX|TX
-int message;
+#include <SPI.h>
+#include <mcp_can.h>
 
-void setup(){
+#define BLE_ENABLED true
+#define CAN_BUS_ENABLED true
+
+MCP_CAN CAN(10);
+SoftwareSerial BTSerial(5, 6); // RX | TX
+
+String currentMessage;
+
+void setup() {
+  // Init BLuetooth (BLE) and debugging Serial
   Serial.begin(9600);
-  BTSerial.begin(9600);
 
-  Serial.println("AT commands: ");
+  if (BLE_ENABLED) {
+    BTSerial.begin(9600);
+  }
+
+  // Init CANBUS
+  if (CAN_BUS_ENABLED) {
+    unsigned int status;
+
+    do {
+      status = CAN.begin(CAN_500KBPS);
+      delay(100);
+    } while (CAN_OK == status);
+
+    Serial.println("* CANBUS init successful!");
+  }
 }
 
-void loop(){
+void loop() {
+  if (BLE_ENABLED) {
+    handleBLEmessages();
+  }
+
+  if (CAN_BUS_ENABLED) {
+    readAllCANMessages();
+  }
+}
+
+void handleBLEmessages() {
   if(BTSerial.available()) {
-    Serial.write(BTSerial.read());
+    currentMessage = BTSerial.readString();
+  }
+
+  if (currentMessage.length() > 0) {
+    unsigned int bufSize = currentMessage.length() > 8 ? 8 : currentMessage.length();
+
+    if (CAN_BUS_ENABLED) {
+      unsigned char* buf;
+      currentMessage.getBytes(buf, bufSize, 0);
+      CAN.sendMsgBuf(0x00, 0, bufSize, buf);
+    } else {
+      Serial.write(currentMessage.begin(), bufSize);
+    }
+
+    delay(1000);
+    currentMessage.remove(0, bufSize);
   }
 
 
   if(Serial.available()) {
-    message = Serial.read();
+    char message = Serial.read();
+
     BTSerial.write(message);
     Serial.write(message);
+  }
+}
+
+void readAllCANMessages() {
+  unsigned char length = 0;
+  unsigned char buf[8];
+
+  if(CAN_MSGAVAIL == CAN.checkReceive()) {
+    CAN.readMsgBuf(&length, buf);
+
+    for(int i = 0; i<length; i++) {
+      Serial.write(buf[i]);
+      Serial.write("\t");
+    }
+    Serial.println();
   }
 }
