@@ -5,6 +5,9 @@
 #define BLE_ENABLED true
 #define CAN_BUS_ENABLED true
 
+#define DIS_TEXT_line1 0x261
+#define DIS_TEXT_line2 0x263
+
 MCP_CAN CAN(10);
 SoftwareSerial BTSerial(5, 6); // RX | TX
 
@@ -52,7 +55,7 @@ void handleBLEmessages() {
     if (CAN_BUS_ENABLED) {
       unsigned char* buf;
       currentMessage.getBytes(buf, bufSize, 0);
-      CAN.sendMsgBuf(0x00, 0, bufSize, buf);
+      CAN.sendMsgBuf(DIS_TEXT_line1, 0, bufSize, buf);
     } else {
       Serial.write(currentMessage.begin(), bufSize);
     }
