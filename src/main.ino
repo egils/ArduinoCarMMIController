@@ -3,7 +3,7 @@
 #include <mcp_can.h>
 
 #define BLE_ENABLED true
-#define CAN_BUS_ENABLED true
+#define CAN_BUS_ENABLED false
 
 #define DIS_TEXT_line1 0x261
 #define DIS_TEXT_line2 0x263
@@ -60,7 +60,6 @@ void handleBLEmessages() {
       Serial.write(currentMessage.begin(), bufSize);
     }
 
-    delay(1000);
     currentMessage.remove(0, bufSize);
   }
 
