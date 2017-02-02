@@ -17,8 +17,6 @@ unsigned char okToJoin[6] = {0x16, 0x01, 0x00, 0x00, 0x00, 0x00};
 unsigned char ack[6] = {0x08, 0x01, 0x00, 0x00, 0x00, 0x00};
 unsigned char fmRadio[8] = {0x81, 0x01, 0x12, 0xA0, 0x00, 0x00, 0x00, 0x00};
 
-unsigned char testMessage[8] = {0x45, 0x4C, 0x54, 0x4F, 0x4E, 0x20, 0x4A, 0x4F};
-
 unsigned char length = 0;
 unsigned char buf[8];
 char str[20];
@@ -63,7 +61,11 @@ void loop() {
     CAN.sendMsgBuf(AUDIO_SOURCE, 0, 8, fmRadio);
     delay(100); // should report status only once in 100ms
 
-    CAN.sendMsgBuf(DIS_TEXT_line1, 0, 8, testMessage);
+    unsigned char DIS1Message[8] = {0x4c, 0x41, 0x42, 0x41, 0x53, 0x2c, 0x00, 0x00};
+    CAN.sendMsgBuf(DIS_TEXT_line1, 0, 8, DIS1Message);
+
+    unsigned char DIS2Message[8] = {0x50, 0x41, 0x53, 0x41, 0x55, 0x4c, 0x49, 0x21};
+    CAN.sendMsgBuf(DIS_TEXT_line2, 0, 8, DIS2Message);
 
     // readCANMessage();
   }
